@@ -1,16 +1,19 @@
-//import react into the bundle
-import React from 'react'
-import {createRoot} from 'react-dom/client'
+import React from "react";
+import { createRoot } from "react-dom/client"; // Importa createRoot
+import App from "./App";
+import { BrowserRouter } from "react-router-dom";
+import { ContextProvider } from "./store/appContext";
 
-//include your index.scss file into the bundle
-import "../styles/index.css";
+const container = document.getElementById("root"); // Asegúrate de que "root" coincida con el id en tu HTML
+const root = createRoot(container); // Crea la raíz
 
-//import your own components
-import Layout from './layout.js'
+root.render(
+  <BrowserRouter>
+    <ContextProvider>
+      <App />
+    </ContextProvider>
+  </BrowserRouter>
+);
 
-//
-const root = createRoot(document.querySelector("#app"))
 
-//render your react application
-root.render(<Layout/>)
 
