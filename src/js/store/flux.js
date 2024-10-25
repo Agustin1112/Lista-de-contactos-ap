@@ -1,81 +1,107 @@
 const getState = ({ getStore, getActions, setStore }) => {
     return {
-        store: {
-            contacts: [], // Aquí almacenamos los contactos
+      store: {
+        apiUrl: "https://playground.4geeks.com/contact/agendas/Agustin_Perrone",
+        contacts: [],
+        contactToEdit: {},
+        contactToConfirmationToDelete: {},
+      },
+      actions: {
+        updateContactToEdit: (contact) => {
+          setStore({ contactToEdit: contact });
         },
-        actions: {
-            // Obtener todos los contactos
-            getContacts: async () => {
-                try {
-                    const response = await fetch('https://playground.4geeks.com/apis/fake/contact/');
-                    const data = await response.json();
-                    setStore({ contacts: data });
-                } catch (error) {
-                    console.error("Error fetching contacts:", error);
-                }
-            },
-
-            // Crear nuevo contacto
-            addContact: async (contact) => {
-                try {
-                    const response = await fetch('https://playground.4geeks.com/apis/fake/contact/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(contact)
-                    });
-                    if (response.ok) {
-                        const newContact = await response.json();
-                        const store = getStore();
-                        setStore({ contacts: [...store.contacts, newContact] });
-                    }
-                } catch (error) {
-                    console.error("Error adding contact:", error);
-                }
-            },
-
-            // Actualizar contacto
-            updateContact: async (id, updatedContact) => {
-                try {
-                    const response = await fetch(`https://playground.4geeks.com/apis/fake/contact/${id}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(updatedContact)
-                    });
-                    if (response.ok) {
-                        const store = getStore();
-                        const updatedContacts = store.contacts.map(contact =>
-                            contact.id === id ? { ...contact, ...updatedContact } : contact
-                        );
-                        setStore({ contacts: updatedContacts });
-                    }
-                } catch (error) {
-                    console.error("Error updating contact:", error);
-                }
-            },
-
-            // Eliminar contacto
-            deleteContact: async (id) => {
-                try {
-                    const response = await fetch(`https://playground.4geeks.com/apis/fake/contact/${id}`, {
-                        method: 'DELETE'
-                    });
-                    if (response.ok) {
-                        const store = getStore();
-                        const filteredContacts = store.contacts.filter(contact => contact.id !== id);
-                        setStore({ contacts: filteredContacts });
-                    }
-                } catch (error) {
-                    console.error("Error deleting contact:", error);
-                }
+  
+        deleteContactToConfirmationToDelete: (contact) => {
+          setStore({ contactToConfirmationToDelete: contact });
+        },
+  
+        getContacts: async () => {
+          const actions = getActions();
+          const store = getStore(); // nos devuelve los valores
+          try {
+            const response = await fetch(store.apiUrl);
+            if (response.status === 404) {
+              await actions.createAgenda();
+              return;
             }
-        }
+            const data = await response.json();
+            setStore({ contacts: data.contacts });
+          } catch (e) {
+            console.error(e);
+          }
+        },
+  
+        createAgenda: async () => {
+          const store = getStore();
+          try {
+            const response = await fetch(store.apiUrl, {
+              method: "POST",
+            });
+          } catch (e) {
+            console.error(e);
+          }
+        },
+  
+        createContact: async (contact) => {
+          const store = getStore();
+          try {
+            const response = await fetch(store.apiUrl + "/contacts", {
+              method: "POST",
+              body: JSON.stringify({
+                ...contact,
+              }),
+              headers: {
+                "Content-type": "application/json",
+              },
+            });
+            if (response.ok) {
+              console.log("Contacto creado");
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        },
+  
+        updateContact: async (id, contact) => {
+          const store = getStore();
+          const actions = getActions(); // traer la función que nos trae los contacts
+          try {
+            const response = await fetch(store.apiUrl + "/contacts" + `/${id}`, {
+              method: "PUT",
+              body: JSON.stringify(contact),
+              headers: { "Content-type": "application/json" },
+            });
+            const data = await response.json();
+            // cuando actualice traiga los contactos
+            actions.getContacts();
+          } catch (e) {
+            console.log(e);
+          }
+        },
+  
+        deleteContact: async (id) => {
+          try {
+            const store = getStore();
+            const response = await fetch(store.apiUrl + "/contacts" + `/${id}`, {
+              method: "DELETE",
+            });
+            if (!response.ok) {
+              alert("No se puede borrar");
+              throw new Error("No se pudo borrar el contacto");
+            } else {
+              const filteredContacts = store.contacts.filter(
+                (contact) => contact.id !== id
+              );
+              setStore({ contacts: filteredContacts });
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        },
+      },
     };
-};
-
-export default getState;
-
+  };
+  
+  export default getState;
+  
 

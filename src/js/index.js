@@ -1,19 +1,16 @@
+//importo
 import React from "react";
-import { createRoot } from "react-dom/client"; // Importa createRoot
-import App from "./App";
-import { BrowserRouter } from "react-router-dom";
-import { ContextProvider } from "./store/appContext";
+import { createRoot } from "react-dom/client";
 
-const container = document.getElementById("root"); // Asegúrate de que "root" coincida con el id en tu HTML
-const root = createRoot(container); // Crea la raíz
+//inclui tu archivo index.scss en el paquete
+import "../styles/index.css";
 
-root.render(
-  <BrowserRouter>
-    <ContextProvider>
-      <App />
-    </ContextProvider>
-  </BrowserRouter>
-);
+//importo mis propios componentes
+import Layout from "./layout.jsx";
 
+//
+const root = createRoot(document.querySelector("#app"));
 
+//renderizo la aplicacion
+root.render(<Layout />);
 
